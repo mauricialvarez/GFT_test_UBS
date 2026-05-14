@@ -28,11 +28,11 @@ public sealed class PortfolioInputLinesValidator : AbstractValidator<PortfolioIn
             return;
         }
 
-        ValidateDate(lines[0], context);
+        ValidateDate(lines[0], context, lines[0].LineNumber);
 
-        if (!int.TryParse(lines[1], NumberStyles.None, CultureInfo.InvariantCulture, out var tradeCount))
+        if (!int.TryParse(lines[1].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var tradeCount))
         {
-            context.AddFailure("quantidade de operacoes invalida.");
+            context.AddFailure(WithLine(lines[1].LineNumber, "quantidade de operacoes invalida."));
             return;
         }
 
@@ -40,7 +40,9 @@ public sealed class PortfolioInputLinesValidator : AbstractValidator<PortfolioIn
 
         if (tradeLines.Length > tradeCount)
         {
-            context.AddFailure("existem mais operacoes para processar do que o informado.");
+            context.AddFailure(WithLine(
+                tradeLines[tradeCount].LineNumber,
+                "existem mais operacoes para processar do que o informado."));
             return;
         }
 
@@ -59,53 +61,69 @@ public sealed class PortfolioInputLinesValidator : AbstractValidator<PortfolioIn
         }
     }
 
-    private static bool ValidateTradeLine(string tradeLine, ValidationContext<PortfolioInputLines> context)
+    private static bool ValidateTradeLine(InputLine tradeLine, ValidationContext<PortfolioInputLines> context)
     {
-        var parts = tradeLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var parts = tradeLine.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         if (parts.Length != 3)
         {
-            context.AddFailure("operacao invalida.");
+            context.AddFailure(WithLine(tradeLine.LineNumber, "operacao invalida."));
             return false;
         }
 
         if (!decimal.TryParse(parts[0], NumberStyles.Number, CultureInfo.InvariantCulture, out var tradeValue))
         {
-            context.AddFailure("valor da operacao invalido.");
+            context.AddFailure(WithLine(tradeLine.LineNumber, "valor da operacao invalido."));
             return false;
         }
 
         if (tradeValue < 0)
         {
-            context.AddFailure("O valor da operacao nao pode ser negativo.");
+            context.AddFailure(WithLine(tradeLine.LineNumber, "O valor da operacao nao pode ser negativo."));
             return false;
         }
 
         if (!Enum.TryParse<ClientSector>(parts[1], ignoreCase: true, out var clientSector)
             || !Enum.IsDefined(clientSector))
         {
-            context.AddFailure("setor do cliente invalido.");
+            context.AddFailure(WithLine(tradeLine.LineNumber, "setor do cliente invalido."));
             return false;
         }
 
-        return ValidateDate(parts[2], context);
+        return ValidateDate(parts[2], context, tradeLine.LineNumber);
     }
 
-    private static bool ValidateDate(string value, ValidationContext<PortfolioInputLines> context)
+    private static bool ValidateDate(
+        InputLine inputLine,
+        ValidationContext<PortfolioInputLines> context,
+        int lineNumber)
+    {
+        return ValidateDate(inputLine.Value, context, lineNumber);
+    }
+
+    private static bool ValidateDate(string value, ValidationContext<PortfolioInputLines> context, int lineNumber)
     {
         if (!DateTime.TryParseExact(value, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
         {
-            context.AddFailure("data invalida. Use o formato MM/dd/yyyy.");
+            context.AddFailure(WithLine(lineNumber, "data invalida. Use o formato MM/dd/yyyy."));
             return false;
         }
 
         return true;
     }
 
-    private static string[] Normalize(IEnumerable<string>? inputLines)
+    private static InputLine[] Normalize(IEnumerable<string>? inputLines)
     {
         return (inputLines ?? Array.Empty<string>())
-            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .Select((line, index) => new InputLine(index + 1, line))
+            .Where(line => !string.IsNullOrWhiteSpace(line.Value))
             .ToArray();
     }
+
+    private static string WithLine(int lineNumber, string message)
+    {
+        return $"linha {lineNumber}: {message}";
+    }
+
+    private sealed record InputLine(int LineNumber, string Value);
 }

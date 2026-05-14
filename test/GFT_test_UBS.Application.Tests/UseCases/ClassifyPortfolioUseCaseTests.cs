@@ -74,6 +74,6 @@ public sealed class ClassifyPortfolioUseCaseTests
         // Assert
         act.Should()
             .Throw<InputValidationException>()
-            .WithMessage("existem mais operacoes para processar do que o informado.");
+            .WithMessage("linha 5: existem mais operacoes para processar do que o informado.");
     }
 }

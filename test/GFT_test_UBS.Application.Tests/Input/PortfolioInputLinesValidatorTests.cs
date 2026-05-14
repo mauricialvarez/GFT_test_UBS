@@ -27,12 +27,12 @@ public sealed class PortfolioInputLinesValidatorTests
     }
 
     [Theory]
-    [InlineData("31/12/2020", "1", "2000000 Private 12/29/2025", "data invalida. Use o formato MM/dd/yyyy.")]
-    [InlineData("12/11/2020", "abc", "2000000 Private 12/29/2025", "quantidade de operacoes invalida.")]
-    [InlineData("12/11/2020", "1", "invalid Private 12/29/2025", "valor da operacao invalido.")]
-    [InlineData("12/11/2020", "1", "2000000 Corporate 12/29/2025", "setor do cliente invalido.")]
-    [InlineData("12/11/2020", "1", "2000000 Private 29/12/2025", "data invalida. Use o formato MM/dd/yyyy.")]
-    [InlineData("12/11/2020", "1", "-1 Private 12/29/2025", "O valor da operacao nao pode ser negativo.")]
+    [InlineData("31/12/2020", "1", "2000000 Private 12/29/2025", "linha 1: data invalida. Use o formato MM/dd/yyyy.")]
+    [InlineData("12/11/2020", "abc", "2000000 Private 12/29/2025", "linha 2: quantidade de operacoes invalida.")]
+    [InlineData("12/11/2020", "1", "invalid Private 12/29/2025", "linha 3: valor da operacao invalido.")]
+    [InlineData("12/11/2020", "1", "2000000 Corporate 12/29/2025", "linha 3: setor do cliente invalido.")]
+    [InlineData("12/11/2020", "1", "2000000 Private 29/12/2025", "linha 3: data invalida. Use o formato MM/dd/yyyy.")]
+    [InlineData("12/11/2020", "1", "-1 Private 12/29/2025", "linha 3: O valor da operacao nao pode ser negativo.")]
     public void Validate_should_return_expected_message_when_input_is_invalid(
         string referenceDate,
         string tradeCount,

@@ -48,7 +48,7 @@ public sealed class ConsoleApplicationTests
 
         // Assert
         result.ExitCode.Should().NotBe(0);
-        result.StandardError.Should().Contain("Erro: data invalida. Use o formato MM/dd/yyyy.");
+        result.StandardError.Should().Contain("Erro: linha 1: data invalida. Use o formato MM/dd/yyyy.");
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public sealed class ConsoleApplicationTests
 
         // Assert
         result.ExitCode.Should().NotBe(0);
-        result.StandardError.Should().Contain("Erro: data invalida. Use o formato MM/dd/yyyy.");
+        result.StandardError.Should().Contain("Erro: linha 3: data invalida. Use o formato MM/dd/yyyy.");
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public sealed class ConsoleApplicationTests
 
         // Assert
         result.ExitCode.Should().NotBe(0);
-        result.StandardError.Should().Contain("Erro: existem mais operacoes para processar do que o informado.");
+        result.StandardError.Should().Contain("Erro: linha 10: existem mais operacoes para processar do que o informado.");
     }
 
     private static async Task<ConsoleResult> RunConsoleAsync(string input)
