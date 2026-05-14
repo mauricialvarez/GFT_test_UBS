@@ -12,13 +12,11 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    var inputLines = ReadInputLines();
     var useCase = new ClassifyPortfolioUseCase();
+    using var outputWriter = new StreamWriter(Console.OpenStandardOutput(), bufferSize: 1 << 20);
 
-    foreach (var category in useCase.Execute(inputLines))
-    {
-        Log.Information("{Category}", category);
-    }
+    await useCase.ExecuteAsync(Console.In, outputWriter);
+    await outputWriter.FlushAsync();
 
     return 0;
 }
@@ -31,19 +29,6 @@ catch (Exception exception)
 finally
 {
     Log.CloseAndFlush();
-}
-
-static string[] ReadInputLines()
-{
-    var lines = new List<string>();
-    string? line;
-
-    while ((line = Console.ReadLine()) is not null)
-    {
-        lines.Add(line);
-    }
-
-    return lines.ToArray();
 }
 
 static string GetUserMessage(Exception exception)

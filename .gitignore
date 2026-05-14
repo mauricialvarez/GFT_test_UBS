@@ -55,3 +55,4 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+Data/input_10000000.txt
