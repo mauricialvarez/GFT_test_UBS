@@ -1,0 +1,15 @@
+**/.git
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/TestResults
+**/BenchmarkDotNet.Artifacts
+
+Data/input_10000000.txt
+benchmarks/data
+
+*.user
+*.suo
+*.tmp
+*.log
