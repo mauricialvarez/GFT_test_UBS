@@ -57,22 +57,36 @@ Executar os testes:
 dotnet test GFT_test_UBS.sln
 ```
 
-Executar a aplicação informando os dados manualmente:
+Executar a aplicação informando os dados manualmente. A entrada segue o formato do enunciado: data de referência, quantidade de operações e uma operação por linha.
 
 ```bash
 dotnet run --project src/GFT_test_UBS.Interface/GFT_test_UBS.Interface.csproj
 ```
 
+A CLI processa a entrada por streaming, lendo uma operação por vez e escrevendo a categoria diretamente na saída.
+
 Executar a aplicação com o arquivo de exemplo no CMD:
 
 ```cmd
-dotnet run --project src\GFT_test_UBS.Interface\GFT_test_UBS.Interface.csproj < input.txt
+dotnet run -c Release --project src\GFT_test_UBS.Interface\GFT_test_UBS.Interface.csproj < Data\input.txt
 ```
 
 Executar a aplicação com o arquivo de exemplo no PowerShell:
 
 ```powershell
-Get-Content .\input.txt | dotnet run --project .\src\GFT_test_UBS.Interface\GFT_test_UBS.Interface.csproj
+Get-Content .\Data\input.txt | dotnet run -c Release --project .\src\GFT_test_UBS.Interface\GFT_test_UBS.Interface.csproj
+```
+
+Executar o binário já compilado em Release:
+
+```cmd
+dotnet src\GFT_test_UBS.Interface\bin\Release\net8.0\GFT_test_UBS.Interface.dll < Data\input.txt
+```
+
+Executar a massa de 10M operações sem gravar a saída em disco:
+
+```cmd
+dotnet src\GFT_test_UBS.Interface\bin\Release\net8.0\GFT_test_UBS.Interface.dll < Data\input_10000000.txt > NUL
 ```
 
 ## Benchmarks
@@ -111,16 +125,26 @@ No Windows/CMD:
 dotnet run -c Release --project benchmarks\GFT_test_UBS.Benchmarks\GFT_test_UBS.Benchmarks.csproj
 ```
 
-### Resultado base
+O benchmark compara dois fluxos:
+
+- `Buffered`: lê todas as linhas com `File.ReadAllLines`, classifica tudo em memória e escreve as categorias em `TextWriter.Null`.
+- `Streaming`: lê o arquivo com `StreamReader`, classifica uma operação por vez e escreve em `TextWriter.Null`.
+
+### Resultado comparativo
 
 Execução local com BenchmarkDotNet `ShortRun`, .NET 8.0.25, Windows 11, Intel Core i7-13700HX.
 
-| Operações | Tempo médio | Memória alocada |
-|---:|---:|---:|
-| 1k | 458.8 us | 603.62 KB |
-| 10k | 5.325 ms | 6.018 MB |
-| 100k | 161.991 ms | 60.161 MB |
-| 1M | 1.371 s | 601.575 MB |
-| 10M | 7.165 s | 5.875 GB |
+| Operações | Fluxo | Tempo médio | Ratio | Memória alocada | Alloc Ratio |
+|---:|---|---:|---:|---:|---:|
+| 1k | Buffered | 1.511 ms | 1.00 | 739.13 KB | 1.00 |
+| 1k | Streaming | 2.008 ms | 1.33 | 622.67 KB | 0.84 |
+| 10k | Buffered | 10.591 ms | 1.00 | 7445.68 KB | 1.00 |
+| 10k | Streaming | 8.731 ms | 0.82 | 6139.99 KB | 0.82 |
+| 100k | Buffered | 207.962 ms | 1.00 | 73593.38 KB | 1.00 |
+| 100k | Streaming | 67.580 ms | 0.33 | 61312.83 KB | 0.83 |
+| 1M | Buffered | 2.215 s | 1.00 | 729677.50 KB | 1.00 |
+| 1M | Streaming | 962.796 ms | 0.44 | 613038.98 KB | 0.84 |
+| 10M | Buffered | 20.833 s | 1.00 | 7444115.23 KB | 1.00 |
+| 10M | Streaming | 9.555 s | 0.46 | 6130290.13 KB | 0.82 |
 
-Observação: os benchmarks medem o core da aplicação (`ClassifyPortfolioUseCase`) com os dados já carregados em memória no setup do BenchmarkDotNet.
+Observação: a saída do benchmark é descartada com `TextWriter.Null` para medir processamento e escrita sem custo de persistir milhões de linhas em disco.

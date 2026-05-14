@@ -9,7 +9,7 @@ BenchmarkRunner.Run<ClassifyPortfolioUseCaseBenchmarks>();
 public class ClassifyPortfolioUseCaseBenchmarks
 {
     private readonly ClassifyPortfolioUseCase _useCase = new();
-    private string[] _inputLines = [];
+    private string _dataFilePath = string.Empty;
 
     [Params(1_000, 10_000, 100_000, 1_000_000, 10_000_000)]
     public int TradeCount { get; set; }
@@ -17,15 +17,27 @@ public class ClassifyPortfolioUseCaseBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        var dataFilePath = FindDataFile($"input_{TradeCount}.txt");
+        _dataFilePath = FindDataFile($"input_{TradeCount}.txt");
+    }
 
-        _inputLines = File.ReadAllLines(dataFilePath);
+    [Benchmark(Baseline = true)]
+    public void Buffered()
+    {
+        var inputLines = File.ReadAllLines(_dataFilePath);
+        var categories = _useCase.Execute(inputLines);
+
+        foreach (var category in categories)
+        {
+            TextWriter.Null.WriteLine(category);
+        }
     }
 
     [Benchmark]
-    public IReadOnlyCollection<string> ClassifyPortfolio()
+    public async Task Streaming()
     {
-        return _useCase.Execute(_inputLines);
+        using var reader = File.OpenText(_dataFilePath);
+
+        await _useCase.ExecuteAsync(reader, TextWriter.Null);
     }
 
     private static string FindDataFile(string fileName)
