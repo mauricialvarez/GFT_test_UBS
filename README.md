@@ -133,7 +133,83 @@ O Compose monta:
 Data/ -> /data:ro
 ```
 
-Por padrão, o serviço lê `/data/input.txt`. Para usar outro arquivo, altere o `command` em `docker/compose.yaml`.
+Por padrão, o serviço lê `/data/input.txt`. Para usar outro arquivo, altere o `command` e a variável `INPUT_FILE` em `docker/compose.yaml`.
+
+### Logs com Seq
+
+O `docker/compose.yaml` também sobe uma instância do Seq para observabilidade local. A aplicação envia logs estruturados para o Seq quando a variável `SEQ_URL` está configurada.
+
+Os resultados da classificação continuam em `stdout`. Erros de validação continuam em `stderr`. O Seq recebe apenas logs operacionais, como início, fim, sucesso, warnings e falhas.
+
+Subir o Seq:
+
+```bash
+docker compose -f docker/compose.yaml up -d seq
+```
+
+Acessar a UI:
+
+```text
+http://localhost:5341
+```
+
+Executar a aplicação enviando logs para o Seq e lendo `Data/input.txt` pelo volume `/data`:
+
+```bash
+docker compose -f docker/compose.yaml run --rm gft-test-ubs
+```
+
+Cada execução recebe um `TracingId`. Se a variável `TRACING_ID` não for informada, a aplicação gera um GUID automaticamente.
+
+Para informar um `TracingId` manual, útil quando um orquestrador externo já possui um id da execução:
+
+```bash
+TRACING_ID=execucao-local-001 docker compose -f docker/compose.yaml run --rm gft-test-ubs
+```
+
+No PowerShell:
+
+```powershell
+$env:TRACING_ID = "execucao-local-001"
+docker compose -f docker/compose.yaml run --rm gft-test-ubs
+Remove-Item Env:\TRACING_ID
+```
+
+No Seq, filtre uma execução específica com:
+
+```text
+TracingId = 'execucao-local-001'
+```
+
+Campos enviados nos logs:
+
+| Campo | Descrição |
+|---|---|
+| `TracingId` | Identificador da execução. Pode ser gerado automaticamente ou informado por variável de ambiente. |
+| `InputFile` | Arquivo de entrada processado pela execução. No Compose padrão, `/data/input.txt`. |
+| `Status` | Status final da execução, como `Success` ou `Failure`. |
+
+Eventos registrados:
+
+| Evento | Nível |
+|---|---|
+| Início da execução | Information |
+| Arquivo processado com sucesso | Information |
+| Falha ao processar arquivo | Warning |
+| Erro exibido ao usuário | Error |
+| Fim da execução | Information |
+
+Parar o Seq:
+
+```bash
+docker compose -f docker/compose.yaml down
+```
+
+Remover também o volume local de dados do Seq:
+
+```bash
+docker compose -f docker/compose.yaml down -v
+```
 
 ## Benchmarks
 
