@@ -89,6 +89,52 @@ Executar a massa de 10M operações sem gravar a saída em disco:
 dotnet src\GFT_test_UBS.Interface\bin\Release\net8.0\GFT_test_UBS.Interface.dll < Data\input_10000000.txt > NUL
 ```
 
+## Docker
+
+O Dockerfile fica em:
+
+```text
+docker/Dockerfile
+```
+
+Construir a imagem:
+
+```bash
+docker build -f docker/Dockerfile -t gft-test-ubs:local .
+```
+
+Executar a imagem recebendo a entrada via `stdin`:
+
+```bash
+docker run --rm -i gft-test-ubs:local < Data/input.txt
+```
+
+Executar montando a pasta `Data` como volume somente leitura:
+
+```bash
+docker run --rm --entrypoint sh -v "$(pwd)/Data:/data:ro" gft-test-ubs:local -c "dotnet GFT_test_UBS.Interface.dll < /data/input.txt"
+```
+
+No PowerShell, use `${PWD}`:
+
+```powershell
+docker run --rm --entrypoint sh -v "${PWD}/Data:/data:ro" gft-test-ubs:local -c "dotnet GFT_test_UBS.Interface.dll < /data/input.txt"
+```
+
+Executar via Docker Compose:
+
+```bash
+docker compose -f docker/compose.yaml run --rm gft-test-ubs
+```
+
+O Compose monta:
+
+```text
+Data/ -> /data:ro
+```
+
+Por padrão, o serviço lê `/data/input.txt`. Para usar outro arquivo, altere o `command` em `docker/compose.yaml`.
+
 ## Benchmarks
 
 Os benchmarks ficam em:

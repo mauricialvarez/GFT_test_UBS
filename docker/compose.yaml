@@ -1,0 +1,10 @@
+services:
+  gft-test-ubs:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: gft-test-ubs:local
+    volumes:
+      - ../Data:/data:ro
+    entrypoint: ["sh", "-c"]
+    command: ["dotnet GFT_test_UBS.Interface.dll < /data/input.txt"]
