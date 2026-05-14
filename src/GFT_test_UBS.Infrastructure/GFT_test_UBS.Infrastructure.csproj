@@ -4,9 +4,4 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\GFT_test_UBS.Application\GFT_test_UBS.Application.csproj" />
-    <ProjectReference Include="..\GFT_test_UBS.Domain\GFT_test_UBS.Domain.csproj" />
-  </ItemGroup>
 </Project>

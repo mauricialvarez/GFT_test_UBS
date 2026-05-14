@@ -8,6 +8,6 @@ public sealed class ExpiredTradeCategoryRule : ITradeCategoryRule
 
     public bool IsMatch(ITrade trade, DateTime referenceDate)
     {
-        return trade.NextPaymentDate < referenceDate.AddDays(-30);
+        return trade.IsExpired(referenceDate);
     }
 }

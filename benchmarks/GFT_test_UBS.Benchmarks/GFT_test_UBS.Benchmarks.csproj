@@ -7,11 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Serilog" Version="4.0.1" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GFT_test_UBS.Application\GFT_test_UBS.Application.csproj" />
+    <ProjectReference Include="..\..\src\GFT_test_UBS.Application\GFT_test_UBS.Application.csproj" />
   </ItemGroup>
 </Project>

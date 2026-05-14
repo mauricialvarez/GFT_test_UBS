@@ -1,46 +1,56 @@
-using System.Globalization;
-using GFT_test_UBS.Application.Categorization;
-using GFT_test_UBS.Domain.Entities;
+using GFT_test_UBS.Application.Exceptions;
+using GFT_test_UBS.Application.UseCases;
+using Serilog;
+using Serilog.Events;
 
-var referenceDate = ParseDate(Console.ReadLine());
-var tradeCount = int.Parse(Console.ReadLine() ?? "0", CultureInfo.InvariantCulture);
-var trades = new List<ITrade>();
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console(
+        outputTemplate: "{Message:lj}{NewLine}",
+        standardErrorFromLevel: LogEventLevel.Error)
+    .CreateLogger();
 
-for (var i = 0; i < tradeCount; i++)
+try
 {
-    var line = Console.ReadLine();
+    var inputLines = ReadInputLines();
+    var useCase = new ClassifyPortfolioUseCase();
 
-    if (string.IsNullOrWhiteSpace(line))
+    foreach (var category in useCase.Execute(inputLines))
     {
-        continue;
+        Log.Information("{Category}", category);
     }
 
-    trades.Add(ParseTrade(line));
+    return 0;
+}
+catch (Exception exception)
+{
+    Log.Error("Erro: {Message}", GetUserMessage(exception));
+
+    return 1;
+}
+finally
+{
+    Log.CloseAndFlush();
 }
 
-var categorizer = new TradeCategorizer(new ITradeCategoryRule[]
+static string[] ReadInputLines()
 {
-    new ExpiredTradeCategoryRule(),
-    new HighRiskTradeCategoryRule(),
-    new MediumRiskTradeCategoryRule(),
-});
+    var lines = new List<string>();
+    string? line;
 
-foreach (var category in categorizer.CategorizeMany(trades, referenceDate))
-{
-    Console.WriteLine(category);
+    while ((line = Console.ReadLine()) is not null)
+    {
+        lines.Add(line);
+    }
+
+    return lines.ToArray();
 }
 
-static ITrade ParseTrade(string line)
+static string GetUserMessage(Exception exception)
 {
-    var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-    var value = double.Parse(parts[0], CultureInfo.InvariantCulture);
-    var clientSector = parts[1];
-    var nextPaymentDate = ParseDate(parts[2]);
-
-    return new Trade(value, clientSector, nextPaymentDate);
-}
-
-static DateTime ParseDate(string? value)
-{
-    return DateTime.ParseExact(value ?? string.Empty, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+    return exception switch
+    {
+        InputValidationException => exception.Message,
+        _ => "erro inesperado ao processar a entrada.",
+    };
 }

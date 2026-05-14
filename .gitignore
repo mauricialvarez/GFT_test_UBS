@@ -27,6 +27,8 @@ bld/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+benchmarks/data/
+BenchmarkDotNet.Artifacts/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
@@ -37,6 +39,7 @@ ScaffoldingReadMe.txt
 *.snupkg
 
 # Others
+.vs/
 ~$*
 *~
 CodeCoverage/

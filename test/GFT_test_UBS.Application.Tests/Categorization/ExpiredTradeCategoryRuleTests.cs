@@ -1,5 +1,7 @@
+using FluentAssertions;
 using GFT_test_UBS.Application.Categorization;
 using GFT_test_UBS.Domain.Entities;
+using GFT_test_UBS.Domain.ValueObjects;
 using Xunit;
 
 namespace GFT_test_UBS.Application.Tests.Categorization;
@@ -15,12 +17,23 @@ public sealed class ExpiredTradeCategoryRuleTests
         string nextPaymentDate,
         bool expected)
     {
+        // Arrange
         var referenceDate = new DateTime(2020, 12, 11);
-        var trade = new Trade(400_000, "Public", DateTime.ParseExact(nextPaymentDate, "MM/dd/yyyy", null));
+        var trade = CreateTrade(nextPaymentDate);
         var rule = new ExpiredTradeCategoryRule();
 
+        // Act
         var result = rule.IsMatch(trade, referenceDate);
 
-        Assert.Equal(expected, result);
+        // Assert
+        result.Should().Be(expected);
+    }
+
+    private static Trade CreateTrade(string nextPaymentDate)
+    {
+        return new Trade(
+            400_000m,
+            ClientSector.Public,
+            DateTime.ParseExact(nextPaymentDate, "MM/dd/yyyy", null));
     }
 }
